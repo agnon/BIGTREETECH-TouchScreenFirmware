@@ -26,10 +26,16 @@ void probeOffsetEnable(float shim)
     levelingResetProbedPoint();  // reset to check for new updates
   }
 
-  probeHeightRelative();                                            // set relative position mode
-  mustStoreCmd("G1 X%.2f Y%.2f\n",
-               getParameter(P_PROBE_OFFSET, AXIS_INDEX_X),
-               getParameter(P_PROBE_OFFSET, AXIS_INDEX_Y));         // move nozzle to XY probing point
+  //probeHeightRelative();                                            // set relative position mode
+  // mustStoreCmd("G1 X%.2f Y%.2f\n",
+  //              getParameter(P_PROBE_OFFSET, AXIS_INDEX_X),
+  //              getParameter(P_PROBE_OFFSET, AXIS_INDEX_Y));         // move nozzle to XY probing point
+  // Hard code Move to center instead, better than crashing x and y axis into machine since these offsets can be negative
+  // My x probe offset is -40 something. And it returns to X:2 after G28. A -40 X move at X:2 is kinda bad.
+  // Changing to absolute coordinates instead and move to center and then reactivate relative moves again... 
+  probeHeightAbsolute();
+  mustStoreCmd("G1 X%.2f Y%.2f\n", infoSettings.machine_size_max[X_AXIS] / 2.0f, infoSettings.machine_size_max[Y_AXIS] / 2.0f);
+  probeHeightRelative();
   probeHeightStart(probedZ - probeOffsetGetValue() + shim, false);  // lower nozzle to probing Z0 point + shim
   probeOffsetSetValue(probedZ);                                     // set Z offset to match probing Z0 point
   probeHeightRelative();                                            // set relative position mode
